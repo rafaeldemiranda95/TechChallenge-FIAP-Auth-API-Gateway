@@ -23,7 +23,6 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 # Definir diretório de trabalho
 WORKDIR /var/www/html
 
-# Copiar aplicação
 COPY . /var/www/html
 
 # Instalar dependências do Composer, ajustar permissões e otimizar autoloader
