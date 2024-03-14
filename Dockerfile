@@ -1,7 +1,5 @@
-# Imagem base com PHP 8.2 e Apache
 FROM php:8.2-apache
 
-# Instala as extensões do PHP necessárias para o Laravel
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
@@ -28,5 +26,4 @@ RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available
 
 EXPOSE 80
 
-# Inicia o Apache em primeiro plano
 CMD ["apache2-foreground"]
