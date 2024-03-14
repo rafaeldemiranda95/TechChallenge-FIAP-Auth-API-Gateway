@@ -22,7 +22,6 @@ WORKDIR /var/www/html
 # Copia o seu código fonte para dentro da imagem
 COPY . /var/www/html
 
-
 # Cria o arquivo .env a partir do .env.example
 RUN cp .env.example .env
 # Instala as dependências do Composer (excluindo as de desenvolvimento)
