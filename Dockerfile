@@ -2,7 +2,7 @@ FROM composer:latest as composer
 
 FROM php:8.2-apache
 
-# Instalação das dependências do sistema necessárias
+# Atualiza os pacotes e instala as dependências necessárias
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
@@ -14,19 +14,18 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     g++ \
     libgrpc-dev \
-    php-dev \
-    php-pear \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* 
+    && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-install \
+    pdo_mysql \
+    zip \
+    sodium
 
-# Instalação e ativação das extensões PHP
-RUN docker-php-ext-install pdo_mysql zip sodium
-
-# Instalação e ativação da extensão gRPC
+# Instalar a extensão gRPC
 RUN pecl install grpc \
     && docker-php-ext-enable grpc
 
-# Instalação e ativação da extensão Protobuf
+# Instalar a extensão Protobuf
 RUN pecl install protobuf \
     && docker-php-ext-enable protobuf
 
@@ -38,14 +37,14 @@ WORKDIR /var/www/html
 
 COPY . /var/www/html
 
-# Instalação das dependências do Composer, ajuste de permissões
+# Instala as dependências do projeto via Composer, ajusta permissões
 RUN composer install --no-dev --optimize-autoloader \
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Configuração do servidor Apache
-RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf \
-    && sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+# Configura o nome do servidor e ajusta o DocumentRoot
+RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
 
