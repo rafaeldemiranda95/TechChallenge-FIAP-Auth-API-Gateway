@@ -1,43 +1,48 @@
-# Usando a imagem do PHP 8.2 com Apache como base
+FROM composer:latest as composer
+
 FROM php:8.2-apache
 
-# Instalando pacotes necessários, incluindo ferramentas para compilação
+# Atualiza os pacotes e instala as dependências necessárias, incluindo libsodium-dev para sodium e dependências para gRPC e protobuf
 RUN apt-get update && apt-get install -y \
+    libzip-dev \
+    zip \
     git \
-    unzip \
-    libz-dev \
-    libpng-dev \
     libonig-dev \
     libsodium-dev \
     autoconf \
-    g++ \
-    make \
-    curl \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && docker-php-ext-install mbstring zip gd pdo_mysql sodium
+    zlib1g-dev \
+    php-dev \
+    libssl-dev \
+    php-pear && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    docker-php-ext-install \
+    pdo_mysql \
+    zip \
+    sodium
 
-# Instalando Composer globalmente
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Instalar a extensão gRPC
+RUN pecl install grpc && \
+    docker-php-ext-enable grpc
 
-# Instalando a extensão gRPC
-RUN pecl install grpc && docker-php-ext-enable grpc
+# Instalar a extensão protobuf
+RUN pecl install protobuf && \
+    docker-php-ext-enable protobuf
 
-# Copiando o aplicativo para o container
-WORKDIR /var/www/html
-COPY . /var/www/html
-
-# Instalando dependências do projeto com Composer
-RUN composer install --no-dev --optimize-autoloader
-
-# Ajustando permissões
-RUN chown -R www-data:www-data /var/www/html && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Habilitando mod_rewrite para o Apache
 RUN a2enmod rewrite
 
-# Configurando o Apache para servir o diretório public do Laravel
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+COPY . /var/www/html
+
+# Instala as dependências do projeto via Composer, ajusta permissões
+RUN composer install --no-dev --optimize-autoloader && \
+    chown -R www-data:www-data /var/www/html && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Configura o nome do servidor e ajusta o DocumentRoot
+RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
