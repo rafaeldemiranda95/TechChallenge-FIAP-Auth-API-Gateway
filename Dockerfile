@@ -25,7 +25,7 @@ COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 
 # Expor a porta em que o aplicativo será acessível
-EXPOSE 3000
+EXPOSE 80
 
 # Comando para executar o aplicativo
 CMD ["node", "dist/main"]
