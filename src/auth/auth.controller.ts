@@ -5,7 +5,6 @@ import { AuthService } from './auth.service';
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
-    //rota de teste so para ver se a aplicação funciona
 
     @Get('test')
     @HttpCode(HttpStatus.OK)
