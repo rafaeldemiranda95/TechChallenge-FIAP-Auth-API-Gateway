@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as admin from 'firebase-admin'; // Importar o módulo firebase-admin
+import * as admin from 'firebase-admin';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
