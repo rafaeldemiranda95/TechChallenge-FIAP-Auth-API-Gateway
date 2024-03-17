@@ -1,4 +1,3 @@
-// src/auth/auth.service.ts
 import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { FirestoreService } from '../firestore/firestore.service';
@@ -33,7 +32,6 @@ export class AuthService {
             const user = await admin.auth().getUserByEmail(loginDto.email);
             const token = await admin.auth().createCustomToken(user.uid);
 
-            // Retorna o token para o cliente. O cliente pode usar este token para autenticar com o Firebase diretamente.
             return { token };
         } catch (error) {
             throw new Error('Login falhou: ' + error.message);
