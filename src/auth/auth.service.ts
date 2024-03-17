@@ -14,16 +14,17 @@ export class AuthService {
             password: registerDto.password,
         });
 
-        const user = new User(userRecord.uid, registerDto.email, registerDto.firstName, registerDto.lastName);
+        const user = new User(userRecord.uid, registerDto.email, registerDto.firstName, registerDto.lastName, registerDto.address, registerDto.cellphoneNumber);
         await this.firestoreService.createUser(user);
 
-        // Retorna os detalhes do usuário registrado
         return {
             uid: user.uid,
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
             createdAt: user.createdAt,
+            address: user.address,
+            cellphoneNumber: user.cellphoneNumber
         };
     }
 
