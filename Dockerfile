@@ -1,38 +1,21 @@
-FROM composer:latest as composer
+FROM node:18-alpine as builder
 
-FROM php:8.2-apache
+WORKDIR /usr/src/app
 
-RUN apt-get update && apt-get install -y \
-    libzip-dev \
-    zip \
-    git \
-    libonig-dev \
-    libsodium-dev \
-    libgrpc-dev \
-    autoconf \
-    g++ \
-    make \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && docker-php-ext-install \
-    pdo_mysql \
-    zip \
-    sodium
+COPY package*.json ./
+RUN npm install
 
-RUN a2enmod rewrite
+COPY . .
 
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+RUN npm run build
 
-WORKDIR /var/www/html
+FROM node:18-alpine
 
-COPY . /var/www/html
+WORKDIR /usr/src/app
 
-RUN composer install --no-dev --optimize-autoloader && \
-    chown -R www-data:www-data /var/www/html && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf
-RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/dist ./dist
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+CMD ["node", "dist/main"]
